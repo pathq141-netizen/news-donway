@@ -87,3 +87,10 @@ npm run preview
 - Periksa redirect URL Supabase Auth.
 - Tambahkan validasi input server-side, rate limiting, dan alur upload server-side sebelum mengaktifkan upload.
 - Ganti konten contoh dengan berita yang bersumber dan terverifikasi.
+
+
+## Foto berita (versi upload)
+- Banner/sampul: gunakan rasio 16:9, disarankan 1200 × 675 piksel.
+- Foto di dalam artikel: opsional, disarankan 1200 × 900 piksel atau gambar landscape.
+- Maksimum 10 MB per foto; format JPG, PNG, WEBP, AVIF.
+- Jalankan `supabase/add-body-image.sql` sekali di Supabase SQL Editor sebelum memakai field foto isi artikel. Bucket `news-media` dan policy Storage harus tersedia; lihat `supabase/schema.sql` untuk aturan setup.
