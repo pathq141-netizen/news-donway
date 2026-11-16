@@ -68,7 +68,41 @@ Deno.serve(async (req) => {
     const exportedVapidKeys = Deno.env.get("VAPID_KEYS_JSON");
     const subject = Deno.env.get("VAPID_SUBJECT");
     if (!exportedVapidKeys || !subject) return json({ error: "VAPID secrets are not configured" }, 500, cors.headers);
-    const vapidKeys = await webpush.importVapidKeys(JSON.parse(exportedVapidKeys));
+    const parsedVapidKeys: unknown = JSON.parse(exportedVapidKeys);
+
+    if (!parsedVapidKeys || typeof parsedVapidKeys !== "object" || Array.isArray(parsedVapidKeys)) {
+      throw new Error("VAPID_KEYS_JSON must be a JSON object");
+    }
+
+    const source = parsedVapidKeys as Record<string, unknown>;
+    const publicKey = source.publicKey as Record<string, unknown> | undefined;
+    const privateKey = source.privateKey as Record<string, unknown> | undefined;
+
+    if (
+      !publicKey || !privateKey ||
+      typeof publicKey.x !== "string" ||
+      typeof publicKey.y !== "string" ||
+      typeof privateKey.x !== "string" ||
+      typeof privateKey.y !== "string" ||
+      typeof privateKey.d !== "string"
+    ) {
+      throw new Error("VAPID_KEYS_JSON has invalid publicKey/privateKey JWK fields");
+    }
+
+    const normalizedVapidKeys = {
+      publicKey: {
+        kty: "EC", crv: "P-256",
+        x: publicKey.x, y: publicKey.y,
+        key_ops: ["verify"], ext: true,
+      } as JsonWebKey,
+      privateKey: {
+        kty: "EC", crv: "P-256",
+        x: privateKey.x, y: privateKey.y, d: privateKey.d,
+        key_ops: ["sign"], ext: true,
+      } as JsonWebKey,
+    };
+
+    const vapidKeys = await webpush.importVapidKeys(normalizedVapidKeys);
     const appServer = await webpush.ApplicationServer.new({ contactInformation: subject, vapidKeys });
     const { data: rows, error: listError } = await db.from("push_subscriptions").select("id,endpoint,subscription");
     if (listError) return json({ error: "Could not load subscribers" }, 500, cors.headers);
