@@ -1,3 +1,4 @@
+
 name: Deploy Supabase Functions
 
 on:
@@ -20,11 +21,11 @@ jobs:
           version: latest
 
       - name: Deploy push-subscribe
-        run: supabase functions deploy push-subscribe --project-ref surixtpjidkdjvmmqjgr
+        run: supabase functions deploy push-subscribe --project-ref surixtpjidkdjvmmqjgr --yes
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
 
       - name: Deploy push-send
-        run: supabase functions deploy push-send --project-ref surixtpjidkdjvmmqjgr
+        run: supabase functions deploy push-send --project-ref surixtpjidkdjvmmqjgr --yes
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
